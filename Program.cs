@@ -4,10 +4,17 @@ namespace dtp6_contacts
 {
     class MainClass
     {
-        static Person[] contactList = new Person[100];
+        static List<Person> contactList = new List<Person>();
         class Person
         {
-            public string persname, surname, phone, address, birthdate;
+            private string persname, surname, birthdate;
+            private List<string> phone = new List<string>();
+            private List<string> address = new List<string>();
+            public string Persname { get { return persname; } set { persname = value; } }
+            public string Surname { get { return surname; } set { surname = value; } }
+            public List<string> Phone { get { return phone; } set { phone = value; } }
+            public List<string> Address { get { return address; } set { address = value; } }
+            public string Birthdate { get { return birthdate; } set { birthdate = value; } }
         }
         public static void Main(string[] args)
         {
@@ -69,8 +76,8 @@ namespace dtp6_contacts
                 string persname = Console.ReadLine();
                 Console.Write("surname: ");
                 string surname = Console.ReadLine();
-                Console.Write("phone: ");
-                string phone = Console.ReadLine();
+                Console.Write("phone, if more than one separate them with ',': ");
+                string[] phone = Console.ReadLine().Split(',');
             }
             else
             {
@@ -97,8 +104,9 @@ namespace dtp6_contacts
             {
                 foreach (Person p in contactList)
                 {
-                    if (p != null)
-                        outfile.WriteLine($"{p.persname};{p.surname};{p.phone};{p.address};{p.birthdate}");
+                        string phone = string.Join(";", p.Phone);
+                        string address = string.Join(";", p.Address);
+                        outfile.WriteLine($"{p.Persname};{p.Surname};{phone};{address};{p.Birthdate}");
                 }
             }
         }
@@ -110,15 +118,14 @@ namespace dtp6_contacts
                 string line;
                 while ((line = infile.ReadLine()) != null)
                 {
-                    string[] attrs = line.Split('|');
+                    List<string> attrs = line.Split('|').ToList();
                     Person p = new Person();
-                    p.persname = attrs[0];
-                    p.surname = attrs[1];
-                    string[] phones = attrs[2].Split(';');
-                    p.phone = phones[0];
-                    string[] addresses = attrs[3].Split(';');
-                    p.address = addresses[0];
-                    for (int i = 0; i < contactList.Length; i++)
+                    p.Persname = attrs[0];
+                    p.Surname = attrs[1];
+                    p.Phone = attrs[2].Split(';').ToList();             //Konvertera till lista
+                    p.Address = attrs[3].Split(';').ToList();           //Konvertera till lista
+                    foreach (var v in attrs) { Console.WriteLine(v); }
+                    for (int i = 0; i < contactList.Count; i++)
                     {
                         if (contactList[i] == null)
                         {
@@ -139,15 +146,14 @@ namespace dtp6_contacts
                 string line;
                 while ((line = infile.ReadLine()) != null)
                 {
-                    string[] attrs = line.Split('|');
+                    List<string> attrs = line.Split('|').ToList();
                     Person p = new Person();
-                    p.persname = attrs[0];
-                    p.surname = attrs[1];
-                    string[] phones = attrs[2].Split(';');
-                    p.phone = phones[0];
-                    string[] addresses = attrs[3].Split(';');
-                    p.address = addresses[0];
-                    for (int i = 0; i < contactList.Length; i++)
+                    p.Persname = attrs[0];
+                    p.Surname = attrs[1];
+                    p.Phone = attrs[2].Split(';').ToList();
+                    p.Address = attrs[3].Split(';').ToList();
+                    foreach (string v in attrs) { Console.WriteLine(v); }
+                    for (int i = 0; i < contactList.Count; i++)
                     {
                         if (contactList[i] == null)
                         {
