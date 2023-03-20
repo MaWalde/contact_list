@@ -4,8 +4,8 @@ namespace dtp6_contacts
 {
     class MainClass
     {
-        static List<Person> contactList = new List<Person>();
-        class Person
+        public static List<Person> contactList = new List<Person>();
+        public class Person
         {
             private string persname, surname, birthdate;
             private List<string> phone = new List<string>();
@@ -104,9 +104,9 @@ namespace dtp6_contacts
             {
                 foreach (Person p in contactList)
                 {
-                        string phone = string.Join(";", p.Phone);
-                        string address = string.Join(";", p.Address);
-                        outfile.WriteLine($"{p.Persname};{p.Surname};{phone};{address};{p.Birthdate}");
+                    string phone = string.Join(";", p.Phone);
+                    string address = string.Join(";", p.Address);
+                    outfile.WriteLine($"{p.Persname}|{p.Surname}|{phone}|{address}|{p.Birthdate}");
                 }
             }
         }
@@ -124,15 +124,7 @@ namespace dtp6_contacts
                     p.Surname = attrs[1];
                     p.Phone = attrs[2].Split(';').ToList();             //Konvertera till lista
                     p.Address = attrs[3].Split(';').ToList();           //Konvertera till lista
-                    foreach (var v in attrs) { Console.WriteLine(v); }
-                    for (int i = 0; i < contactList.Count; i++)
-                    {
-                        if (contactList[i] == null)
-                        {
-                            contactList[i] = p;
-                            break;
-                        }
-                    }
+                    contactList.Add(p);
                 }
             }
 
@@ -152,15 +144,7 @@ namespace dtp6_contacts
                     p.Surname = attrs[1];
                     p.Phone = attrs[2].Split(';').ToList();
                     p.Address = attrs[3].Split(';').ToList();
-                    foreach (string v in attrs) { Console.WriteLine(v); }
-                    for (int i = 0; i < contactList.Count; i++)
-                    {
-                        if (contactList[i] == null)
-                        {
-                            contactList[i] = p;
-                            break;
-                        }
-                    }
+                    contactList.Add(p);
                 }
             }
 
