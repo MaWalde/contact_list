@@ -1,4 +1,6 @@
-﻿namespace dtp6_contacts
+﻿using System.ComponentModel;
+
+namespace dtp6_contacts
 {
     class MainClass
     {
@@ -76,7 +78,6 @@
                 Console.WriteLine("Not yet implemented: new /person/");
             }
         }
-
         private static void help()
         {
             Console.WriteLine("Avaliable commands: \n" +
@@ -90,7 +91,6 @@
                 "  save         - save contact list data to the file previously loaded\n" +
                 "  save /file/ - save contact list data to the file\n");
         }
-
         private static void save(string lastFileName)
         {
             using (StreamWriter outfile = new StreamWriter(lastFileName))
@@ -102,7 +102,6 @@
                 }
             }
         }
-
         private static string loadFile(string[] commandLine)
         {
             string lastFileName = commandLine[1];
@@ -111,7 +110,6 @@
                 string line;
                 while ((line = infile.ReadLine()) != null)
                 {
-                    Console.WriteLine(line);
                     string[] attrs = line.Split('|');
                     Person p = new Person();
                     p.persname = attrs[0];
@@ -120,11 +118,11 @@
                     p.phone = phones[0];
                     string[] addresses = attrs[3].Split(';');
                     p.address = addresses[0];
-                    for (int ix = 0; ix < contactList.Length; ix++)
+                    for (int i = 0; i < contactList.Length; i++)
                     {
-                        if (contactList[ix] == null)
+                        if (contactList[i] == null)
                         {
-                            contactList[ix] = p;
+                            contactList[i] = p;
                             break;
                         }
                     }
@@ -141,7 +139,6 @@
                 string line;
                 while ((line = infile.ReadLine()) != null)
                 {
-                    Console.WriteLine(line);
                     string[] attrs = line.Split('|');
                     Person p = new Person();
                     p.persname = attrs[0];
@@ -150,11 +147,11 @@
                     p.phone = phones[0];
                     string[] addresses = attrs[3].Split(';');
                     p.address = addresses[0];
-                    for (int ix = 0; ix < contactList.Length; ix++)
+                    for (int i = 0; i < contactList.Length; i++)
                     {
-                        if (contactList[ix] == null)
+                        if (contactList[i] == null)
                         {
-                            contactList[ix] = p;
+                            contactList[i] = p;
                             break;
                         }
                     }
