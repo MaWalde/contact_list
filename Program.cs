@@ -86,7 +86,14 @@ namespace dtp7_contact_list
                     if (commandLine.Length == 1)
                     {
                         lastFileName = GetUserDirectory("address.lis");
-                        LoadContactListFromFile(lastFileName);
+                        try
+                        {
+                            LoadContactListFromFile(lastFileName); //TODO: Fixa utskrift för antal tilllagda rader
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            Console.WriteLine("The file {0} cannot be found", lastFileName);
+                        }
                     }
                     else if (commandLine.Length == 2)
                     {
@@ -221,14 +228,18 @@ namespace dtp7_contact_list
 
         private static void LoadContactListFromFile(string lastFileName)
         {
-            using (StreamReader infile = new StreamReader(lastFileName))
+            try
             {
-                string line;
-                while ((line = infile.ReadLine()) != null)
+                using (StreamReader infile = new StreamReader(lastFileName))
+
                 {
-                    LoadContact(line); // Also prints the line loaded
+                    string line;
+                    while ((line = infile.ReadLine()) != null)
+                    {
+                        LoadContact(line); // Also prints the line loaded
+                    }
                 }
-            }
+            } catch (FileNotFoundException) { Console.WriteLine($"The file {lastFileName} cannot be found"); }
         }
 
         private static void LoadContact(string lineFromAddressFile)
