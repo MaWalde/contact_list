@@ -23,9 +23,9 @@ namespace dtp7_contact_list
                 set { phone = value; }
             }
             public List<string> Address
-            { 
-                get { return address; } 
-                set { address = value; } 
+            {
+                get { return address; }
+                set { address = value; }
             }
             public string PhoneList
             {
@@ -72,7 +72,7 @@ namespace dtp7_contact_list
                     else if (commandLine.Length == 3)
                     {
                         //TODO: Lägg till utskrift om personen inte finns
-                        DeleteAllPersons(commandLine[1], commandLine[2]); 
+                        DeleteAllPersons(commandLine[1], commandLine[2]);
                     }
                     else
                     {
@@ -182,7 +182,11 @@ namespace dtp7_contact_list
                         found = i; break; // breaks the for loop
                     }
                 }
-                if (found == -1) break; // breaks the do loop
+                if (found == -1)
+                {
+                    Console.WriteLine($"{persname} {surname} does not exist");
+                    break; // breaks the do loop
+                }
                 contactList.RemoveAt(found);
             } while (true);
         }
@@ -199,29 +203,24 @@ namespace dtp7_contact_list
         private static void AddAndSetupNewPerson(string persname, string surname)
         {
             Person newPerson = new Person(persname, surname);
-            Console.WriteLine("Add multiple phones, end with empty string:");
-            do
-            {
-                Console.Write("  phone: ");
-                List<string> phone = Console.ReadLine();
-                if (phone == " ") break;
-                newPerson.Phone=;
-            } while (true);
-            Console.WriteLine("Add multiple addresses, end with empty string:");
-            do
-            {
-                Console.Write("  address: ");
-                string address = Console.ReadLine();
-                if (address == " ") break;
-                newPerson.AddPhone(address);
-            } while (true);
+            Console.WriteLine("Add multiple phones, separate numbers with ',':");
+            Console.Write("  phone: ");
+            List<string> phone = Console.ReadLine().Split(',').ToList();
+            newPerson.Phone = phone;
+            Console.WriteLine("Add multiple addresses, separate addresses with ',':");
+            Console.Write("  address: ");
+            List<string> address = Console.ReadLine().Split(',').ToList();
+            newPerson.Address = address;
             Console.Write("birth date in numbers: ");
             try
             {
                 int birthdate = Convert.ToInt32(Console.ReadLine());
                 newPerson.Birthdate = birthdate;
             }
-            catch (Exception ex) { Console.WriteLine($"{ex}"); }
+            catch (FormatException)
+            {
+                Console.WriteLine($"Birth date must be in numbers!");
+            }
             contactList.Add(newPerson);
         }
 
@@ -249,13 +248,17 @@ namespace dtp7_contact_list
                 using (StreamReader infile = new StreamReader(lastFileName))
 
                 {
+                    int count = 0;
                     string line;
                     while ((line = infile.ReadLine()) != null)
                     {
                         LoadContact(line); // Also prints the line loaded
+                        count++;
                     }
+                    Console.WriteLine($"{count} entrys added");
                 }
-            } catch (FileNotFoundException) { Console.WriteLine($"The file {lastFileName} cannot be found"); }
+            }
+            catch (FileNotFoundException) { Console.WriteLine($"The file {lastFileName} cannot be found"); }
         }
 
         private static void LoadContact(string lineFromAddressFile)
