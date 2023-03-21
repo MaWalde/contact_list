@@ -56,7 +56,7 @@ namespace dtp7_contact_list
                 {
                     if (commandLine.Length == 1)
                     {
-                        contactList = new List<Person>();
+                        contactList.Clear();
                     }
                     else if (commandLine.Length == 3)
                     {
