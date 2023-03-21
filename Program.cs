@@ -17,10 +17,16 @@ namespace dtp7_contact_list
             {
                 this.persname = persname; this.surname = surname;
             }
-            public void AddPhone(string phone)
-                => this.phone.Add(phone);
-            public void AddAddress(string address)
-                => this.address.Add(address);
+            public List<string> Phone
+            {
+                get { return phone; }
+                set { phone = value; }
+            }
+            public List<string> Address
+            { 
+                get { return address; } 
+                set { address = value; } 
+            }
             public string PhoneList
             {
                 get { return String.Join(";", phone); }
@@ -197,9 +203,9 @@ namespace dtp7_contact_list
             do
             {
                 Console.Write("  phone: ");
-                string phone = Console.ReadLine();
+                List<string> phone = Console.ReadLine();
                 if (phone == " ") break;
-                newPerson.AddPhone(phone);
+                newPerson.Phone=;
             } while (true);
             Console.WriteLine("Add multiple addresses, end with empty string:");
             do
