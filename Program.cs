@@ -9,7 +9,7 @@ namespace dtp7_contact_list
         static List<Person> contactList = new List<Person>();
         class Person
         {
-            public string persname, surname, birthdate;
+            public string persname, surname; public int birthdate;
             public List<string> phone;
             public List<string> address;
             public Person() { }
@@ -30,6 +30,11 @@ namespace dtp7_contact_list
             {
                 get { return String.Join(";", address); }
                 private set { }
+            }
+            public int Birthdate
+            {
+                get { return birthdate; }
+                set { birthdate = value; }
             }
             public void Print()
             {
@@ -60,7 +65,8 @@ namespace dtp7_contact_list
                     }
                     else if (commandLine.Length == 3)
                     {
-                        DeleteAllPersons(commandLine[1], commandLine[2]);
+                        //TODO: Lägg till utskrift om personen inte finns
+                        DeleteAllPersons(commandLine[1], commandLine[2]); 
                     }
                     else
                     {
@@ -192,20 +198,24 @@ namespace dtp7_contact_list
             {
                 Console.Write("  phone: ");
                 string phone = Console.ReadLine();
-                if (phone == "") break;
+                if (phone == " ") break;
                 newPerson.AddPhone(phone);
             } while (true);
             Console.WriteLine("Add multiple addresses, end with empty string:");
             do
             {
                 Console.Write("  address: ");
-                string phone = Console.ReadLine();
-                if (phone == "") break;
-                newPerson.AddPhone(phone);
+                string address = Console.ReadLine();
+                if (address == " ") break;
+                newPerson.AddPhone(address);
             } while (true);
-            Console.Write("birth date: ");
-            string birthdate = Console.ReadLine();
-            newPerson.birthdate = birthdate;
+            Console.Write("birth date in numbers: ");
+            try
+            {
+                int birthdate = Convert.ToInt32(Console.ReadLine());
+                newPerson.Birthdate = birthdate;
+            }
+            catch (Exception ex) { Console.WriteLine($"{ex}"); }
             contactList.Add(newPerson);
         }
 
@@ -250,7 +260,7 @@ namespace dtp7_contact_list
             newPerson.surname = attrs[1];
             newPerson.phone = new List<string>(attrs[2].Split(';'));
             newPerson.address = new List<string>(attrs[3].Split(';'));
-            newPerson.birthdate = attrs[4];
+            newPerson.birthdate = Convert.ToInt32(attrs[4]);
             contactList.Add(newPerson);
         }
         private static void PrintHelpMessage()
