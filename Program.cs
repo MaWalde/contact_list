@@ -27,8 +27,7 @@ namespace dtp6_contacts
                 commandLine = Console.ReadLine().Split(' ');
                 if (commandLine[0] == "quit")
                 {
-                    // NYI!
-                    Console.WriteLine("Not yet implemented: safe quit");
+                    Console.WriteLine("Thank you and good day!");
                 }
                 else if (commandLine[0] == "load")
                 {
@@ -61,6 +60,18 @@ namespace dtp6_contacts
                 {
                     help();
                 }
+                else if (commandLine[0] == "delete")
+                {
+                    delete(commandLine);
+                }
+                else if (commandLine[0] == "edit")
+                {
+                    Edit(commandLine);
+                }
+                else if (commandLine[0] == "list")
+                {
+                    printList(commandLine);
+                }
                 else
                 {
                     Console.WriteLine($"Unknown command: '{commandLine[0]}'");
@@ -68,21 +79,99 @@ namespace dtp6_contacts
             } while (commandLine[0] != "quit");
         }
 
-        private static void newEntry(string[] commandLine)
+        private static void delete(string[] commandLine)
         {
             if (commandLine.Length < 2)
             {
-                Console.Write("personal name: ");
-                string persname = Console.ReadLine();
-                Console.Write("surname: ");
-                string surname = Console.ReadLine();
-                Console.Write("phone, if more than one separate them with ',': ");
-                string[] phone = Console.ReadLine().Split(',');
+                contactList.Clear();
             }
             else
             {
-                // NYI!
-                Console.WriteLine("Not yet implemented: new /person/");
+                string person = commandLine[1];
+                foreach (Person p in contactList)
+                {
+                    if (string.Equals(p.Persname, person, StringComparison.OrdinalIgnoreCase))
+                    {
+                        contactList.Remove(p);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private static void Edit(string[] commandLine)
+        {
+            string person = commandLine[1];
+            foreach (Person p in contactList)
+            {
+                if (string.Equals(p.Persname, person, StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("You need to enter all info on this person again to edit the post.");
+                    Console.Write("Updated personal name: ");
+                    p.Persname = Console.ReadLine();
+                    Console.Write("Updated surname: ");
+                    p.Surname = Console.ReadLine();
+                    Console.Write("Updated phones, if more than one separate them with a ',': ");
+                    p.Phone = Console.ReadLine().Split(',').ToList();
+                    Console.Write("Updated address, if more than one seperate them with a ',': ");
+                    p.Address = Console.ReadLine().Split(',').ToList();
+                    Console.Write("Updated birthdate: ");
+                    p.Birthdate = Console.ReadLine();
+                    contactList.Add(p);
+                    break;
+                }
+
+            }
+        }
+
+        private static void printList(string[] commandLine)
+        {
+            if (commandLine.Length < 2)
+            {
+                foreach (Person p in contactList)
+                {
+                    string phone = string.Join(";", p.Phone);
+                    string address = string.Join(";", p.Address);
+                    Console.WriteLine($"{p.Persname}|{p.Surname}|{phone}|{address}|{p.Birthdate}");
+                }
+            }
+            else
+            {
+                string person = commandLine[1];
+                foreach (Person p in contactList)
+                {
+                    if (string.Equals(p.Persname, person, StringComparison.OrdinalIgnoreCase))
+                    {
+                        string phone = string.Join(";", p.Phone);
+                        string address = string.Join(";", p.Address);
+                        Console.WriteLine($"{p.Persname}|{p.Surname}|{phone}|{address}|{p.Birthdate}");
+                    }
+                }
+            }
+        }
+
+        private static void newEntry(string[] commandLine)
+        {
+            Person ny = new();
+            if (commandLine.Length < 2)
+            {
+                Console.Write("Personal name: ");
+                ny.Persname = Console.ReadLine();
+                Console.Write("Surname: ");
+                ny.Surname = Console.ReadLine();
+                Console.Write("Phone, if more than one separate them with a ',': ");
+                ny.Phone = Console.ReadLine().Split(',').ToList();
+                Console.Write("Address, if more than one seperate them with a ',': ");
+                ny.Address = Console.ReadLine().Split(',').ToList();
+                Console.Write("Birthdate: ");
+                ny.Birthdate = Console.ReadLine();
+                contactList.Add(ny);
+            }
+            else
+            {
+                ny.Persname = commandLine[1];
+                ny.Surname = commandLine[2];
+                contactList.Add(ny);
             }
         }
         private static void help()
@@ -124,6 +213,7 @@ namespace dtp6_contacts
                     p.Surname = attrs[1];
                     p.Phone = attrs[2].Split(';').ToList();             //Konvertera till lista
                     p.Address = attrs[3].Split(';').ToList();           //Konvertera till lista
+                    p.Birthdate = attrs[4];
                     contactList.Add(p);
                 }
             }
@@ -144,6 +234,7 @@ namespace dtp6_contacts
                     p.Surname = attrs[1];
                     p.Phone = attrs[2].Split(';').ToList();
                     p.Address = attrs[3].Split(';').ToList();
+                    p.Birthdate = attrs[4];
                     contactList.Add(p);
                 }
             }
