@@ -1,76 +1,147 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.Design;
+using System.IO;
 
-namespace dtp6_contacts
+namespace dtp7_contact_list
 {
     class MainClass
     {
-        public static List<Person> contactList = new List<Person>();
-        public class Person
+        static List<Person> contactList = new List<Person>();
+        class Person
         {
-            private string persname, surname, birthdate;
-            private List<string> phone = new List<string>();
-            private List<string> address = new List<string>();
-            public string Persname { get { return persname; } set { persname = value; } }
-            public string Surname { get { return surname; } set { surname = value; } }
-            public List<string> Phone { get { return phone; } set { phone = value; } }
-            public List<string> Address { get { return address; } set { address = value; } }
-            public string Birthdate { get { return birthdate; } set { birthdate = value; } }
+            public string persname, surname, birthdate;
+            public List<string> phone;
+            public List<string> address;
+            public Person() { }
+            public Person(string persname, string surname)
+            {
+                this.persname = persname; this.surname = surname;
+            }
+            public void AddPhone(string phone)
+                => this.phone.Add(phone);
+            public void AddAddress(string address)
+                => this.address.Add(address);
+            public string PhoneList
+            {
+                get { return String.Join(";", phone); }
+                private set { }
+            }
+            public string AddressList
+            {
+                get { return String.Join(";", address); }
+                private set { }
+            }
+            public void Print()
+            {
+                string phoneList = String.Join(", ", phone);
+                string addressList = String.Join(", ", address);
+                Console.WriteLine($"{persname} {surname}; {phoneList}; {addressList}; {birthdate}");
+            }
         }
         public static void Main(string[] args)
         {
-            string lastFileName = "address.lis";
+            string lastFileName = GetUserDirectory("address.lis");
             string[] commandLine;
-            Welcome();
+            PrintHelpMessage();
             do
             {
                 Console.Write($"> ");
                 commandLine = Console.ReadLine().Split(' ');
                 if (commandLine[0] == "quit")
                 {
-                    Console.WriteLine("Thank you and good day!");
+                    Console.WriteLine("Goodbye!");
                 }
-                else if (commandLine[0] == "load")
+                // NYI: IMPORTANT
+                else if (commandLine[0] == "delete")
                 {
-                    if (commandLine.Length < 2)
+                    if (commandLine.Length == 1)
                     {
-                        lastFileName = load();
+                        contactList = new List<Person>();
+                    }
+                    else if (commandLine.Length == 3)
+                    {
+                        DeleteAllPersons(commandLine[1], commandLine[2]);
                     }
                     else
                     {
-                        lastFileName = loadFile(commandLine);
+                        Console.WriteLine("Usage:");
+                        Console.WriteLine("  delete                      - empty the contact list");
+                        Console.WriteLine("  delete /persname/ /surname/ - delete a person");
+                    }
+                }
+                else if (commandLine[0] == "list")
+                {
+                    if (commandLine.Length == 1)
+                    {
+                        ListContactList();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Usage:");
+                        Console.WriteLine("  list                        - list the contact list");
+                    }
+                }
+                else if (commandLine[0] == "load")
+                {
+                    if (commandLine.Length == 1)
+                    {
+                        lastFileName = GetUserDirectory("address.lis");
+                        LoadContactListFromFile(lastFileName);
+                    }
+                    else if (commandLine.Length == 2)
+                    {
+                        lastFileName = GetUserDirectory(commandLine[1]); // commandLine[1] is the first argument
+                        // FIXME: Throws System.IO.FileNotFoundException: 
+                        LoadContactListFromFile(lastFileName);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Usage:");
+                        Console.WriteLine("  load                        - load contact list data from the file address.lis");
+                        Console.WriteLine("  load /file/                 - load contact list data from the file");
                     }
                 }
                 else if (commandLine[0] == "save")
                 {
-                    if (commandLine.Length < 2)
+                    if (commandLine.Length == 1)
                     {
-                        save(lastFileName);
+                        SaveContactListToFile(lastFileName);
+                    }
+                    else if (commandLine.Length == 2)
+                    {
+                        SaveContactListToFile(commandLine[1]); // commandLine[1] is the first argument
                     }
                     else
                     {
-                        // NYI!
-                        Console.WriteLine("Not yet implemented: save /file/");
+                        Console.WriteLine("Usage:");
+                        Console.WriteLine("  save                        - save contact list data to the file previously loaded");
+                        Console.WriteLine("  save /file/                 - save contact list data to the file");
                     }
                 }
                 else if (commandLine[0] == "new")
                 {
-                    newEntry(commandLine);
+                    if (commandLine.Length == 1)
+                    {
+                        Console.Write("personal name: ");
+                        string persname = Console.ReadLine();
+                        Console.Write("surname: ");
+                        string surname = Console.ReadLine();
+                        AddAndSetupNewPerson(persname, surname);
+                    }
+                    else if (commandLine.Length == 3)
+                    {
+                        AddAndSetupNewPerson(commandLine[1], commandLine[2]);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Usage:");
+                        Console.WriteLine("  new                         - create new person");
+                        Console.WriteLine("  new /persname/ /surname/    - create new person with personal name and surname");
+                    }
                 }
                 else if (commandLine[0] == "help")
                 {
-                    help();
-                }
-                else if (commandLine[0] == "delete")
-                {
-                    delete(commandLine);
-                }
-                else if (commandLine[0] == "edit")
-                {
-                    Edit(commandLine);
-                }
-                else if (commandLine[0] == "list")
-                {
-                    printList(commandLine);
+                    PrintHelpMessage();
                 }
                 else
                 {
@@ -79,178 +150,112 @@ namespace dtp6_contacts
             } while (commandLine[0] != "quit");
         }
 
-        private static void delete(string[] commandLine)
+        private static void DeleteAllPersons(string persname, string surname)
         {
-            if (commandLine.Length < 2)
+            int found;
+            do
             {
-                contactList.Clear();
-            }
-            else
-            {
-                string person = commandLine[1];
-                foreach (Person p in contactList)
+                found = -1;
+                for (int i = 0; i < contactList.Count; i++)
                 {
-                    if (string.Equals(p.Persname, person, StringComparison.OrdinalIgnoreCase))
+                    if (contactList[i].persname == persname && contactList[i].surname == surname)
                     {
-                        contactList.Remove(p);
-                        break;
+                        found = i; break; // breaks the for loop
                     }
                 }
-            }
+                if (found == -1) break; // breaks the do loop
+                contactList.RemoveAt(found);
+            } while (true);
         }
 
-        private static void Edit(string[] commandLine)
+        private static void ListContactList()
         {
-            string person = commandLine[1];
             foreach (Person p in contactList)
             {
-                if (string.Equals(p.Persname, person, StringComparison.OrdinalIgnoreCase))
-                {
-                    Console.WriteLine("You need to enter all info on this person again to edit the post.");
-                    Console.Write("Updated personal name: ");
-                    p.Persname = Console.ReadLine();
-                    Console.Write("Updated surname: ");
-                    p.Surname = Console.ReadLine();
-                    Console.Write("Updated phones, if more than one separate them with a ',': ");
-                    p.Phone = Console.ReadLine().Split(',').ToList();
-                    Console.Write("Updated address, if more than one seperate them with a ',': ");
-                    p.Address = Console.ReadLine().Split(',').ToList();
-                    Console.Write("Updated birthdate: ");
-                    p.Birthdate = Console.ReadLine();
-                    contactList.Add(p);
-                    break;
-                }
-
+                if (p != null)
+                    p.Print();
             }
         }
 
-        private static void printList(string[] commandLine)
+        private static void AddAndSetupNewPerson(string persname, string surname)
         {
-            if (commandLine.Length < 2)
+            Person newPerson = new Person(persname, surname);
+            Console.WriteLine("Add multiple phones, end with empty string:");
+            do
             {
-                foreach (Person p in contactList)
-                {
-                    string phone = string.Join(";", p.Phone);
-                    string address = string.Join(";", p.Address);
-                    Console.WriteLine($"{p.Persname}|{p.Surname}|{phone}|{address}|{p.Birthdate}");
-                }
-            }
-            else
+                Console.Write("  phone: ");
+                string phone = Console.ReadLine();
+                if (phone == "") break;
+                newPerson.AddPhone(phone);
+            } while (true);
+            Console.WriteLine("Add multiple addresses, end with empty string:");
+            do
             {
-                string person = commandLine[1];
-                foreach (Person p in contactList)
-                {
-                    if (string.Equals(p.Persname, person, StringComparison.OrdinalIgnoreCase))
-                    {
-                        string phone = string.Join(";", p.Phone);
-                        string address = string.Join(";", p.Address);
-                        Console.WriteLine($"{p.Persname}|{p.Surname}|{phone}|{address}|{p.Birthdate}");
-                    }
-                }
-            }
+                Console.Write("  address: ");
+                string phone = Console.ReadLine();
+                if (phone == "") break;
+                newPerson.AddPhone(phone);
+            } while (true);
+            Console.Write("birth date: ");
+            string birthdate = Console.ReadLine();
+            newPerson.birthdate = birthdate;
+            contactList.Add(newPerson);
         }
 
-        private static void newEntry(string[] commandLine)
+        private static string GetUserDirectory(string path)
         {
-            Person ny = new();
-            if (commandLine.Length < 2)
-            {
-                Console.Write("Personal name: ");
-                ny.Persname = Console.ReadLine();
-                Console.Write("Surname: ");
-                ny.Surname = Console.ReadLine();
-                Console.Write("Phone, if more than one separate them with a ',': ");
-                ny.Phone = Console.ReadLine().Split(',').ToList();
-                Console.Write("Address, if more than one seperate them with a ',': ");
-                ny.Address = Console.ReadLine().Split(',').ToList();
-                Console.Write("Birthdate: ");
-                ny.Birthdate = Console.ReadLine();
-                contactList.Add(ny);
-            }
-            else
-            {
-                ny.Persname = commandLine[1];
-                ny.Surname = commandLine[2];
-                contactList.Add(ny);
-            }
+            return $"{System.Environment.GetEnvironmentVariable("USERPROFILE")}\\{path}";
         }
-        private static void help()
-        {
-            Console.WriteLine("Avaliable commands: \n" +
-                "  delete       - emtpy the contact list\n" +
-                "  delete /persname/ /surname/ - delete a person\n" +
-                "  load        - load contact list data from the file address.lis\n" +
-                "  load /file/ - load contact list data from the file\n" +
-                "  new        - create new person\n" +
-                "  new /persname/ /surname/ - create new person with personal name and surname\n" +
-                "  quit        - quit the program\n" +
-                "  save         - save contact list data to the file previously loaded\n" +
-                "  save /file/ - save contact list data to the file\n");
-        }
-        private static void save(string lastFileName)
+
+        private static void SaveContactListToFile(string lastFileName)
         {
             using (StreamWriter outfile = new StreamWriter(lastFileName))
             {
                 foreach (Person p in contactList)
                 {
-                    string phone = string.Join(";", p.Phone);
-                    string address = string.Join(";", p.Address);
-                    outfile.WriteLine($"{p.Persname}|{p.Surname}|{phone}|{address}|{p.Birthdate}");
+                    if (p != null)
+                        outfile.WriteLine($"{p.persname}|{p.surname}|{p.PhoneList}|{p.AddressList}|{p.birthdate}");
                 }
             }
         }
-        private static string loadFile(string[] commandLine)
-        {
-            string lastFileName = commandLine[1];
-            using (StreamReader infile = new StreamReader(lastFileName))
-            {
-                string line;
-                while ((line = infile.ReadLine()) != null)
-                {
-                    List<string> attrs = line.Split('|').ToList();
-                    Person p = new Person();
-                    p.Persname = attrs[0];
-                    p.Surname = attrs[1];
-                    p.Phone = attrs[2].Split(';').ToList();             //Konvertera till lista
-                    p.Address = attrs[3].Split(';').ToList();           //Konvertera till lista
-                    p.Birthdate = attrs[4];
-                    contactList.Add(p);
-                }
-            }
 
-            return lastFileName;
-        }
-        private static string load()
+        private static void LoadContactListFromFile(string lastFileName)
         {
-            string lastFileName = "address.lis";
             using (StreamReader infile = new StreamReader(lastFileName))
             {
                 string line;
                 while ((line = infile.ReadLine()) != null)
                 {
-                    List<string> attrs = line.Split('|').ToList();
-                    Person p = new Person();
-                    p.Persname = attrs[0];
-                    p.Surname = attrs[1];
-                    p.Phone = attrs[2].Split(';').ToList();
-                    p.Address = attrs[3].Split(';').ToList();
-                    p.Birthdate = attrs[4];
-                    contactList.Add(p);
+                    LoadContact(line); // Also prints the line loaded
                 }
             }
-            return lastFileName;
         }
-        private static void Welcome()
+
+        private static void LoadContact(string lineFromAddressFile)
         {
-            Console.WriteLine("Hello and welcome to the contact list\n" +
-                "Avaliable commands: \n" +
-                "  load        - load contact list data from the file address.lis\n" +
-                "  load /file/ - load contact list data from the file\n" +
-                "  new        - create new person\n" +
-                "  new /persname/ /surname/ - create new person with personal name and surname\n" +
-                "  quit        - quit the program\n" +
-                "  save         - save contact list data to the file previously loaded\n" +
-                "  save /file/ - save contact list data to the file\n");
+            string[] attrs = lineFromAddressFile.Split('|');
+            Person newPerson = new Person();
+            newPerson.persname = attrs[0];
+            newPerson.surname = attrs[1];
+            newPerson.phone = new List<string>(attrs[2].Split(';'));
+            newPerson.address = new List<string>(attrs[3].Split(';'));
+            newPerson.birthdate = attrs[4];
+            contactList.Add(newPerson);
+        }
+        private static void PrintHelpMessage()
+        {
+            Console.WriteLine("Avaliable commands: ");
+            Console.WriteLine("  delete                      - empty the contact list");
+            Console.WriteLine("  delete /persname/ /surname/ - delete a person");
+            Console.WriteLine("  list                        - list the contact list");
+            Console.WriteLine("  load                        - load contact list data from the file address.lis");
+            Console.WriteLine("  load /file/                 - load contact list data from the file");
+            Console.WriteLine("  new                         - create new person");
+            Console.WriteLine("  new /persname/ /surname/    - create new person with personal name and surname");
+            Console.WriteLine("  quit                        - quit the program");
+            Console.WriteLine("  save                        - save contact list data to the file previously loaded");
+            Console.WriteLine("  save /file/                 - save contact list data to the file");
+            Console.WriteLine();
         }
     }
 }
