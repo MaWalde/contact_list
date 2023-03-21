@@ -147,7 +147,6 @@ namespace dtp6_contacts
                     contactList.Add(p);
                 }
             }
-
             return lastFileName;
         }
         private static void Welcome()
